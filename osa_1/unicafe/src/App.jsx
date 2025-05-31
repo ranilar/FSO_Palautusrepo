@@ -27,6 +27,7 @@ const Statistics = ( {good, neutral, bad }) => {
   if ( good + neutral + bad != 0 ) { 
     return (
     <div>
+      <table>
       <td>
         <tr>good    {good}</tr>
         <tr>neutral {neutral}</tr>
@@ -35,6 +36,7 @@ const Statistics = ( {good, neutral, bad }) => {
         <tr><StatisticLine text="average" value={calcAvg()}/></tr>
         <tr><StatisticLine text="positive" value={calcPos()}/></tr>
       </td>
+      </table>
     </div>
     )
   } 
