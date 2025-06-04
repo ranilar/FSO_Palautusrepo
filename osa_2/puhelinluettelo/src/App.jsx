@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axios from "axios"
 
 const ShowPersons = ({ persons }) => {
   return (
@@ -44,8 +45,16 @@ const PersonForm = ({
 };
 
 const App = () => {
+
+  axios
+  .get("http://localhost:3001/persons")
+  .then(response => {
+    const personsData = response.data
+    console.log(personsData)
+  })
+
   const [persons, setPersons] = useState([
-    { name: "Arto Hellas"},
+    personsData
   ]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
