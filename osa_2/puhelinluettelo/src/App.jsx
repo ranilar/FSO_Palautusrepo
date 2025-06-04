@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import axios from "axios"
 import personService from "../services/personService"
 
-const ShowPersons = ({ persons }) => {
+const ShowPersons = ({ persons, handleDeletion }) => {
   return (
     <div>
       {persons.map((person) => (
         <p key={person.name}>
-          {person.name} {person.number}
+          {person.name} {person.number} <button onClick={() => handleDeletion(person.id)}>delete</button>
+
         </p>
       ))}
     </div>
@@ -73,6 +74,18 @@ useEffect(() => {
     setNewNumber(event.target.value);
   };
 
+  const handleDeletion = (id) => {
+    if (window.confirm("Are you sure you want to remove this person?")) {
+      personService
+        .remove(id)
+        .then(() => {
+          setPersons(persons.filter(person => person.id !== id));
+        });
+  } else {
+    window.alert("k then");
+  }};
+
+
   const handleAddName = (event) => {
     event.preventDefault();
     if (!persons.some((person) => person.name === newName)) {
@@ -118,7 +131,7 @@ useEffect(() => {
 
       <h3>Numbers</h3>
 
-      <ShowPersons persons={personsToShow} />
+      <ShowPersons persons={personsToShow} handleDeletion={handleDeletion} />
     </div>
   );
 };
