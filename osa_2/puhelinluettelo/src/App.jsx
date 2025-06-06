@@ -88,7 +88,7 @@ useEffect(() => {
 
   const handleAddName = (event) => {
     event.preventDefault();
-    if (!persons.some((person) => person.name === newName)) {
+    if (!persons.some((person) => person.name.toLowerCase() === newName.toLowerCase())) {
       const nameObject = {
         name: newName,
         number: newNumber,
@@ -101,8 +101,21 @@ useEffect(() => {
       setNewNumber("");
       });
     } else {
-      alert(`${newName} is already added to phonebook`);
+      if ( window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+        const person = persons.find(({ name }) => name.toLowerCase() === newName.toLowerCase())      
+        const nameObject = {
+          name: person.name,
+          number: newNumber
+        };
+        personService
+        .update(person.id, nameObject)
+        .then((returnedName) => {
+          setPersons(
+          persons.map((p) => (p.id !== returnedName.id ? p : returnedName)));
+        });
+      }
       setNewName("");
+      setNewNumber("");
     }
   };
 
