@@ -1,0 +1,11 @@
+POST http://localhost:3002/api/persons
+Content-Type: application/json
+
+{
+  "name": "yks",
+  "number": "040-123456"
+}
+
+// ei saa onnistua jos:
+// nimi tai numero puuttuu
+// lisättävä nimi on jo luettelossa
