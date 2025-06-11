@@ -1,1 +1,1 @@
-## Link to deployed site: https://fso-palautusrepo.onrender.com/
+## Link to deployed site: https://fso-palautusrepo.onrender.com/no
