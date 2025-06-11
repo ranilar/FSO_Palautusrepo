@@ -42,6 +42,7 @@ app.get("/api/persons/:id", (request, response) => {
     const id = request.params.id
     const person = persons.find(person => person.id === id)
     response.send(person)
+    console.log("found persom:", person)
 })
 
 app.delete('/api/persons/:id', (request, response) => {
@@ -69,7 +70,7 @@ app.post("/api/persons", (request, response) => {
     const person = {
         name: request.body.name,
         number: request.body.number,
-        id: Math.floor(Math.random() * 10000)
+        id: String(Math.floor(Math.random() * 10000))
     }
     persons = persons.concat(person)
     
@@ -85,7 +86,7 @@ app.get("/info", (request, response) => {
             `)
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT || 3002
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
