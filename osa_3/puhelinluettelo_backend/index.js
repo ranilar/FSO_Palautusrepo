@@ -45,13 +45,16 @@ app.get("/api/persons/:id", (request, response) => {
 })
 
 app.delete('/api/persons/:id', (request, response) => {
+  console.log("persons before delete:", persons)
   const id = request.params.id
   persons = persons.filter(person => person.id !== id)
 
+  console.log("persons after delete:", persons)
   response.status(204).end()
 })
 
 app.post("/api/persons", (request, response) => {
+    console.log("persons before post:", persons)
     if (!request.body.name || !request.body.number) {
         return response.status(400).json({
             error: "name and/or number missing"
@@ -70,6 +73,7 @@ app.post("/api/persons", (request, response) => {
     }
     persons = persons.concat(person)
     
+    console.log("persons after post:", persons)
     response.json(person)
 })
 
@@ -81,7 +85,7 @@ app.get("/info", (request, response) => {
             `)
 })
 
-const PORT = process.env.PORT || 3002
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
