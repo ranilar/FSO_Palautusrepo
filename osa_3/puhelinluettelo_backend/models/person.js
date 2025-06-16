@@ -6,13 +6,13 @@ console.log(url)
 mongoose.set("strictQuery", false)
 mongoose.connect(url)
 
-console.log('connecting to', url)
+console.log("connecting to", url)
 mongoose.connect(url)
   .then(result => {
-    console.log('connected to MongoDB')
+    console.log("connected to MongoDB")
   })
   .catch((error) => {
-    console.log('error connecting to MongoDB:', error.message)
+    console.log("error connecting to MongoDB:", error.message)
   })
 
 
@@ -21,9 +21,9 @@ const personsSchema = new mongoose.Schema({
   number: String
 })
 
-const Person = mongoose.model("Persons", personsSchema)
+const Person = mongoose.model("Person", personsSchema)
 
-personsSchema.set('toJSON', {
+personsSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString()
     delete returnedObject._id

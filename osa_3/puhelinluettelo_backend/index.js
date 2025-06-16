@@ -21,18 +21,24 @@ app.get("/api/persons", (request, response) => {
 })
 
 app.get("/api/persons/:id", (request, response) => {
-    const id = request.params.id
-    const person = Person.find(person => person.id === id)
-    response.send(person)
-    console.log("found persom:", person)
+  const id = request.params.id
+  Person.findById(id)
+    .then(person => {
+      if (person) {
+        response.json(person)
+      }
+    })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
   console.log("persons before delete:", Person)
   const id = request.params.id
-  persons = Person.filter(person => person.id !== id)
+  Person.findByIdAndDelete(id)
+    .then(() => {
+      response.status(204).end()
+    })
 
-  console.log("persons after delete:", persons)
+  console.log("persons after delete:", Person)
   response.status(204).end()
 })
 
@@ -43,18 +49,21 @@ app.post("/api/persons", (request, response) => {
             error: "name and/or number missing"
         })
     }
-    if (persons.some((person) => person.name.toLowerCase() === request.body.name.toLowerCase())) {
+    Person.findOne({ name: request.body.name })
+    .then(existingPerson => {
+      if (existingPerson) {
         return response.status(400).json({
-            error: "person already added"        
+          error: "person already added"
+        })
+      }
     })
-}
 
     const person = new Person({
     name: request.body.name,
     number: request.body.number
     })
     person
-    .save
+    .save()
     .then(savedPerson => {
     console.log("persons after post:", Person)
     response.json(savedPerson)
@@ -69,7 +78,7 @@ app.get("/info", (request, response) => {
             `)
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT || 3002
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
