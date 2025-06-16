@@ -1,33 +1,11 @@
+require('dotenv').config()
 const express = require("express")
 const cors = require('cors')
 const app = express()
+const Person = require("./models/person")
 
 app.use(express.static("dist"))
 app.use(express.json())
-app.use(cors())
-
-let persons = [
-    { 
-      "name": "Arto Hellas", 
-      "number": "040-123456",
-      "id": "1"
-    },
-    { 
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523",
-      "id": "2"
-    },
-    { 
-      "name": "Dan Abramov", 
-      "number": "12-43-234345",
-      "id": "3"
-    },
-    { 
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122",
-      "id": "4"
-    }
-  ]
 
 app.get("/", (request, response) => {
     response.send("<h1>Hello World!</h1>")
@@ -35,27 +13,31 @@ app.get("/", (request, response) => {
 
 
 app.get("/api/persons", (request, response) => {
-    response.send(persons)
+    Person
+    .find({})
+    .then(persons => {
+      response.json(persons)
+    })
 })
 
 app.get("/api/persons/:id", (request, response) => {
     const id = request.params.id
-    const person = persons.find(person => person.id === id)
+    const person = Person.find(person => person.id === id)
     response.send(person)
     console.log("found persom:", person)
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-  console.log("persons before delete:", persons)
+  console.log("persons before delete:", Person)
   const id = request.params.id
-  persons = persons.filter(person => person.id !== id)
+  persons = Person.filter(person => person.id !== id)
 
   console.log("persons after delete:", persons)
   response.status(204).end()
 })
 
 app.post("/api/persons", (request, response) => {
-    console.log("persons before post:", persons)
+    console.log("persons before post:", Person)
     if (!request.body.name || !request.body.number) {
         return response.status(400).json({
             error: "name and/or number missing"
@@ -67,22 +49,23 @@ app.post("/api/persons", (request, response) => {
     })
 }
 
-    const person = {
-        name: request.body.name,
-        number: request.body.number,
-        id: String(Math.floor(Math.random() * 10000))
-    }
-    persons = persons.concat(person)
-    
-    console.log("persons after post:", persons)
-    response.json(person)
+    const person = new Person({
+    name: request.body.name,
+    number: request.body.number
+    })
+    person
+    .save
+    .then(savedPerson => {
+    console.log("persons after post:", Person)
+    response.json(savedPerson)
+    })    
 })
 
 app.get("/info", (request, response) => {
     const date = new Date()
     response.send(`
-            <p>Phonebook has info for ${persons.length} people</p>
-            ${date}
+            <p>Phonebook has info for ${Person.length} people</p>
+            ${date.toLocaleTimeString("fi-FI")}
             `)
 })
 
