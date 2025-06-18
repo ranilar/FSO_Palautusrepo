@@ -70,18 +70,26 @@ app.post("/api/persons", (request, response, next) => {
 })
 
 app.put("/api/persons/:id", (request, response, next) => {
-    if (!request.body.number) {
-        const error = new Error("Number missing")
-        error.name = "MissingInfo"
-        return next(error)
-    }
-      Person.updateOne(
-        { name: { $regex: new RegExp(`^${request.body.name}$`, 'i') } },
-        { $set: { number: request.body.number } }
-  )      .then(savedPerson => {
-        response.json(savedPerson)
-      })
-      .catch(error => next(error))
+  const { number } = request.body
+
+  if (!number) {
+    const error = new Error("Number missing")
+    error.name = "MissingInfo"
+    return next(error)
+  }
+
+  Person.findByIdAndUpdate(
+    request.params.id,
+    { number },
+    { new: true, runValidators: true, context: 'query' }
+  )
+    .then(updatedPerson => {
+      if (!updatedPerson) {
+        return response.status(404).json({ error: "Person not found" })
+      }
+      response.json(updatedPerson)
+    })
+    .catch(error => next(error))
 })
 
 app.get("/info", (request, response) => {
