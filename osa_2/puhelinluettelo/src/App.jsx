@@ -111,18 +111,23 @@ useEffect(() => {
         number: newNumber,
       }
       personService
-        .create(nameObject)
-        .then((returnedName) => {
-      setPersons(persons.concat(returnedName))
-      setNewName("")
-      setNewNumber("")
-      setSuccessMessage(
-          `'${newName}' was added`
-        )
+      .create(nameObject)
+      .then((returnedName) => {
+        setPersons(persons.concat(returnedName))
+        setNewName("")
+        setNewNumber("")
+        setSuccessMessage(`'${newName}' was added`)
         setTimeout(() => {
           setSuccessMessage(null)
         }, 5000)
       })
+      .catch((error) => {
+        setErrorMessage(error.response.data.error || "Something went wrong")
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
+      })
+
     } else {
       if ( window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
         const person = persons.find(({ name }) => name.toLowerCase() === newName.toLowerCase())      

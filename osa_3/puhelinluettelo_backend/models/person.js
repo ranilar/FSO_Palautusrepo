@@ -1,29 +1,41 @@
-const mongoose = require("mongoose")
+const mongoose = require('mongoose')
 
 const url = process.env.MONGODB_URI
 console.log(url)
 
-mongoose.set("strictQuery", false)
+mongoose.set('strictQuery', false)
 mongoose.connect(url)
 
-console.log("connecting to", url)
+console.log('connecting to', url)
 mongoose.connect(url)
   .then(result => {
-    console.log("connected to MongoDB")
+    console.log('connected to MongoDB', result)
   })
   .catch((error) => {
-    console.log("error connecting to MongoDB:", error.message)
+    console.log('error connecting to MongoDB:', error.message)
   })
 
 
-const personsSchema = new mongoose.Schema({
-  name: String,
-  number: String
+
+const personSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    minlength: 3,
+    required: true
+  },
+  number: {
+    type: String,
+    validate: {
+      validator: function(x) {
+        return /^\d{2,3}-\d{5,}$/.test(x)
+      },
+      message: 'Incorrect number format'
+    },
+    required: true
+  }
 })
 
-const Person = mongoose.model("Person", personsSchema)
-
-personsSchema.set("toJSON", {
+personSchema.set('toJSON', {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString()
     delete returnedObject._id
@@ -31,4 +43,4 @@ personsSchema.set("toJSON", {
   }
 })
 
-module.exports = mongoose.model("Person", personsSchema)
+module.exports = mongoose.model('Person', personSchema)
