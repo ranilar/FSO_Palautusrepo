@@ -1,10 +1,19 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
+const User = require('../models/user')
+const jwt = require('jsonwebtoken')
 
-blogsRouter.get('/', async (req, res) => {
+const getTokenFrom = request => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.startsWith('Bearer ')) {
+    return authorization.replace('Bearer ', '')
+  }
+  return null
+}
 
+blogsRouter.get('/', async (req, res, next) => {
   try {
-    const blogs = await Blog.find({})
+    const blogs = await Blog.find({}).populate('user', { user: 1, username: 1})
     res.status(200).json(blogs)
   } catch (exception) {
     next(exception)
@@ -13,6 +22,13 @@ blogsRouter.get('/', async (req, res) => {
 })
 
 blogsRouter.post('/', async (req, res, next) => {
+  console.log(req.body)
+  const decodedToken = jwt.verify(getTokenFrom(req), process.env.SECRET)
+  if (!decodedToken.id) {
+    return res.status(401).json({ error: 'token invalid' })
+  }
+  const user = await User.findById(decodedToken.id)
+
   if (!req.body.likes) {
     req.body.likes = 0
   }
@@ -20,9 +36,21 @@ blogsRouter.post('/', async (req, res, next) => {
     return res.status(400).json({ error: 'title or url missing' })
   }
 
+  if (!user) {
+    return res.status(400).json({ error: 'userId missing or not valid' })
+  }
+
   try {
-    const blog = new Blog(req.body)
+    const blog = new Blog({
+      title: req.body.title,
+      author: req.body.author,
+      url: req.body.url,
+      likes: req.body.likes,
+      user: user.id
+    })
     const savedBlog = await blog.save()
+    user.blogs = user.blogs.concat(savedBlog._id)
+    await user.save()
     res.status(201).json(savedBlog)
   } catch (exception) {
     next(exception)
@@ -30,14 +58,12 @@ blogsRouter.post('/', async (req, res, next) => {
 })
 
 blogsRouter.put('/:id', async (req, res, next) => {
-  console.log(req.params.id)
   try {
     const newBlog = await Blog.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true, context: 'query' }
     )
-    console.log('updating...')
 
     if (newBlog) {
       res.status(200).json(newBlog)
@@ -50,7 +76,6 @@ blogsRouter.put('/:id', async (req, res, next) => {
 })
 
 blogsRouter.delete('/:id',  async (req, res, next) => {
-
   try {
     const id = req.params.id
     response = await Blog.findByIdAndDelete(id)
