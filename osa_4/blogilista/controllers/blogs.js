@@ -85,4 +85,13 @@ blogsRouter.delete('/:id',  async (req, res, next) => {
   }
 })
 
+blogsRouter.delete('/', async (req, res, next) => {
+  try {
+    await Blog.deleteMany({})
+    res.status(204).end()
+  } catch (exception) {
+    next(exception)
+  }
+})
+
 module.exports = blogsRouter
