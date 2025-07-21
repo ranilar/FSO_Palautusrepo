@@ -70,7 +70,7 @@ blogsRouter.put('/:id', async (req, res, next) => {
     } else {
       res.status(404).end()
     }
-  } catch(expection) {
+  } catch(exception) {
     next(exception)
   }
 })
