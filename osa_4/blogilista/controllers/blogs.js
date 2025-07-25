@@ -57,6 +57,7 @@ blogsRouter.post('/', async (req, res, next) => {
 })
 
 blogsRouter.put('/:id', async (req, res, next) => {
+  console.log(req.params.id, req.body)
   try {
     const newBlog = await Blog.findByIdAndUpdate(
       req.params.id,

@@ -1,3 +1,4 @@
+const cors = require('cors')
 const express = require('express')
 const mongoose = require('mongoose')
 const config = require('./utils/config')
@@ -8,6 +9,7 @@ const loginRouter = require('./controllers/login')
 const testRouter = require ('./controllers/testing')
 
 const app = express()
+app.use(cors())
 
 logger.info('connecting to', config.MONGODB_URI)
 

@@ -27,19 +27,20 @@ describe('Blog app', () => {
     beforeEach(async ({ page }) => {
       await page.getByRole('button', { name: 'login'}).click()
     })
+
     test('succeeds with correct credentials', async ({ page }) => {
     await page.getByPlaceholder('username').fill('ippe')
     await page.getByPlaceholder('password').fill('salainen')
     await page.getByRole('button', { name: 'login' }).click()
-    await expect(page.getByText('logged in as Ilari Ranin')).toBeVisible()
+    await expect(page.getByText('ippe logged in')).toBeVisible()
     })
 
-    test('fails with wrong credentials', async ({ page }) => {
+    test('fails with Wrong username or password', async ({ page }) => {
     await page.getByPlaceholder('username').fill('joku')
     await page.getByPlaceholder('password').fill('väärä')
     await page.getByRole('button', { name: 'login' }).click()
-    await expect(page.getByText('wrong credentials')).toBeVisible()
-    await expect(page.getByText('logged in as Ilari Ranin')).not.toBeVisible()
+    await expect(page.getByText('Wrong username or password')).toBeVisible()
+    await expect(page.getByText('ippe logged in')).not.toBeVisible()
 
       })
     })
@@ -57,8 +58,9 @@ describe('Blog app', () => {
       await page.getByPlaceholder('title here...').fill('playwright title')
       await page.getByPlaceholder('author here...').fill('playwright author')
       await page.getByPlaceholder('url here...').fill('playwright url')
-      await page.getByRole('button', { name: 'add' }).click()
-      await expect(page.getByText('playwright title')).toBeVisible()
+      await page.getByRole('button', { name: 'create' }).click()
+      await expect(page.getByText('playwright title').nth(1)).toBeVisible()
+
 
     })
   })
@@ -73,17 +75,23 @@ describe('Blog app', () => {
       await page.getByPlaceholder('title here...').fill('playwright title')
       await page.getByPlaceholder('author here...').fill('playwright author')
       await page.getByPlaceholder('url here...').fill('playwright url')
-      await page.getByRole('button', { name: 'add' }).click()
+      await page.getByRole('button', { name: 'create' }).click()
     })
     test('liking succeeds', async ({ page }) => {
       await page.getByRole('button', { name: 'view' }).click()
       await page.getByRole('button', { name: 'like' }).click()
-      await expect(page.locator('text=Likes: 1')).toBeVisible()   
+      await page.waitForTimeout(3000)
+      await expect(page.locator('text=Likes: 1')).toBeVisible()
     })
     test('deleting blog succeeds', async ({ page }) => {
-      await page.on('dialog', dialog => dialog.accept())
       await page.getByRole('button', { name: 'view' }).click()
+      page.on('dialog', async dialog => {
+        expect(dialog.message()).toContain('Delete blog?')
+        await dialog.accept();
+      });
       await page.getByRole('button', { name: 'remove' }).click()
+      
+      await page.waitForTimeout(3000)
       await expect(page.getByText('playwright title')).not.toBeVisible()
     })
   })
@@ -106,7 +114,7 @@ describe('Blog app', () => {
       await page.getByPlaceholder('title here...').fill('blog by ippe')
       await page.getByPlaceholder('author here...').fill('Ilari')
       await page.getByPlaceholder('url here...').fill('joku.com')
-      await page.getByRole('button', { name: /add/i }).click()
+      await page.getByRole('button', { name: /create/i }).click()
 
       await page.getByRole('button', { name: 'logout' }).click()
 
@@ -132,11 +140,12 @@ describe('Blog app', () => {
       ]
 
       for (const blog of blogs) {
-        await page.getByRole('button', { name: 'new blog' }).click()
+        await page.waitForTimeout(1000)
+        await page.getByRole('button', { name: 'create new blog' }).click()
         await page.getByPlaceholder('title here...').fill(blog.title)
         await page.getByPlaceholder('author here...').fill('tester')
-        await page.getByPlaceholder('url here...').fill('http://example.com')
-        await page.getByRole('button', { name: /add/i }).click()
+        await page.getByPlaceholder('url here...').fill('some.url')
+        await page.getByRole('button', { name: /create/i }).click()
       }
 
       for (const blog of blogs) {
@@ -146,6 +155,7 @@ describe('Blog app', () => {
       const likeBlog = async (title, count) => {
         const blog = page.locator('text=' + title).locator('..')
         for (let i = 0; i < count; i++) {
+          await page.waitForTimeout(1000)
           await blog.getByRole('button', { name: 'like' }).click()
         }
       }
