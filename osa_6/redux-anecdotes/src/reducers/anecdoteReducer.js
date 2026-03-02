@@ -1,5 +1,3 @@
-import { act } from "react"
-
 const anecdotesAtStart = [
   'If it hurts, do it more often',
   'Adding manpower to a late software project makes it later!',
@@ -21,26 +19,44 @@ const asObject = anecdote => {
 
 const initialState = anecdotesAtStart.map(asObject)
 
-const reducer = (state = initialState, action) => {
+const anecdoteReducer = (state = initialState, action) => {
   switch (action.type) {
     case 'VOTE':
       const id = action.payload
 
-      const newState = state.map(anecdote =>
+      const newVote = state.map(anecdote =>
         anecdote.id === id
           ? { ...anecdote, votes: anecdote.votes + 1 }
           : anecdote
       )
-      return newState.sort((x, y) => y.votes - x.votes)
+      return newVote.sort((x, y) => y.votes - x.votes)
 
     case 'NEW_ANECDOTE':
-      newState = [...state, action.payload
+      const newState = [...state, action.payload
 
       ]
-      return newState.sort((x, y) => x.votes - y.votes)
+      return newState.sort((x, y) => y.votes - x.votes)
     default:
       return state
   }
 }
 
-export default reducer
+export const voteAnecdote = (id) => {
+  return {
+    type: 'VOTE',
+    payload: id
+  }
+}
+
+export const createAnecdote = (content) => {
+  return {
+    type: 'NEW_ANECDOTE',
+    payload: {
+      content,
+      id: getId(),
+      votes: 0
+    }
+  }
+}
+
+export default anecdoteReducer
