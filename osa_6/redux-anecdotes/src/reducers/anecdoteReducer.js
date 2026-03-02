@@ -1,3 +1,5 @@
+import { act } from "react"
+
 const anecdotesAtStart = [
   'If it hurts, do it more often',
   'Adding manpower to a late software project makes it later!',
@@ -30,6 +32,10 @@ const reducer = (state = initialState, action) => {
           : anecdote
       )
 
+    case 'NEW_ANECDOTE':
+      return [...state, action.payload
+
+      ]
     default:
       return state
   }
