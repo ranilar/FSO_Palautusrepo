@@ -1,0 +1,17 @@
+{
+  "name": "bloglist",
+  "version": "1.0.0",
+  "description": "bloglist-app: a Fullstack course exercise",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "build": "npm run build --prefix client",
+    "start": "NODE_ENV=production npm start --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.0"
+  },
+  "author": "",
+  "license": "ISC"
+}
