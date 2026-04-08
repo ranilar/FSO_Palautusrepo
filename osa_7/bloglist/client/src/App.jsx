@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
+import NotificationContext from "./contexts/NotificationContext";
 import Notification from "./components/Notification";
 import Blog from "./components/Blog";
 import BlogForm from "./components/BlogForm";
@@ -10,9 +11,8 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import "./index.css";
 
 const App = () => {
+  const [notification, dispatch] = useContext(NotificationContext);
   const [blogs, setBlogs] = useState([]);
-  const [message, setMessage] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
@@ -54,10 +54,8 @@ const App = () => {
         id: user.id,
       },
     };
-    console.log(newBlog);
 
     try {
-      blogFormRef.current.toggleVisibility();
       const blog = await blogService.create(newBlog);
       blog.user = {
         username: user.username,
@@ -66,50 +64,61 @@ const App = () => {
       };
 
       setBlogs((blogs) => blogs.concat(blog));
-      setMessage(`A new blog ${blog.title} by ${blog.author} added`);
-      setTimeout(() => {
-        setMessage(null);
-      }, 5000);
+
+      dispatch({
+        type: "SHOW",
+        payload: {
+          message: `A new blog ${blog.title} by ${blog.author} added`,
+          type: "notice",
+        },
+      });
+      setTimeout(() => dispatch({ type: "HIDE" }), 5000);
 
       setTitle("");
       setAuthor("");
       setUrl("");
     } catch (error) {
-      console.error("Error adding blog:", error.response?.data || error);
-      setErrorMessage("Failed to add blog, please try again.");
-      setTimeout(() => {
-        setErrorMessage(null);
-      }, 5000);
+      dispatch({
+        type: "SHOW",
+        payload: {
+          message: "Failed to add blog, please try again.",
+          type: "error",
+        },
+      });
+      setTimeout(() => dispatch({ type: "HIDE" }), 5000);
     }
   };
 
   const removeBlog = async (blog) => {
-    console.log(blog);
     if (window.confirm("Delete blog?")) {
       try {
         await blogService.remove(blog.id);
         setBlogs(blogs.filter((b) => b.id !== blog.id));
-        setMessage("Blog deletion success");
+        dispatch({
+          type: "SHOW",
+          payload: { message: "Blog deletion success", type: "notice" },
+        });
+        setTimeout(() => dispatch({ type: "HIDE" }), 5000);
       } catch (exception) {
-        setErrorMessage("Something went wrong when removing blog");
-        setTimeout(() => {
-          setErrorMessage(null);
-        }, 5000);
+        dispatch({
+          type: "SHOW",
+          payload: {
+            message: "Something went wrong when removing blog",
+            type: "error",
+          },
+        });
+        setTimeout(() => dispatch({ type: "HIDE" }), 5000);
       }
-    } else {
-      window.alert("k then");
     }
   };
 
   const likeBlog = async (blog) => {
-    console.log(blog);
     try {
       const updated = {
         ...blog,
         likes: blog.likes + 1,
         user: blog.user.id,
       };
-      console.log(updated);
       const returned = await blogService.update(blog.id, updated);
       setBlogs(
         blogs.map((b) =>
@@ -117,10 +126,14 @@ const App = () => {
         ),
       );
     } catch (exception) {
-      setErrorMessage("Something went wrong when removing blog");
-      setTimeout(() => {
-        setErrorMessage(null);
-      }, 5000);
+      dispatch({
+        type: "SHOW",
+        payload: {
+          message: "Something went wrong when liking blog",
+          type: "error",
+        },
+      });
+      setTimeout(() => dispatch({ type: "HIDE" }), 5000);
     }
   };
 
@@ -144,17 +157,17 @@ const App = () => {
         username,
         password,
       });
-      console.log(user);
       window.localStorage.setItem("loggedBlogappUser", JSON.stringify(user));
       blogService.setToken(user.token);
       setUser(user);
       setUsername("");
       setPassword("");
     } catch (exception) {
-      setErrorMessage("Wrong username or password");
-      setTimeout(() => {
-        setErrorMessage(null);
-      }, 5000);
+      dispatch({
+        type: "SHOW",
+        payload: { message: "Wrong username or password", type: "error" },
+      });
+      setTimeout(() => dispatch({ type: "HIDE" }), 5000);
     }
   };
 
@@ -169,7 +182,7 @@ const App = () => {
     return (
       <div>
         <h2>Log in to application</h2>
-        <Notification message={errorMessage} type="error" />
+        <Notification message={notification.message} type={notification.type} />
         <LoginForm
           handleLogin={handleLogin}
           handleUsernameChange={handleUsernameChange}
@@ -185,7 +198,7 @@ const App = () => {
     <div>
       <ErrorBoundary>
         <h2>blogs</h2>
-        <Notification message={message} type="notice" />
+        <Notification message={notification.message} type={notification.type} />
         <p>
           {user.username} logged in
           <button onClick={handleLogout}>logout</button>
