@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useContext } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import NotificationContext from "./contexts/NotificationContext";
+import UserContext from "./contexts/UserContext";
 import Notification from "./components/Notification";
 import Blog from "./components/Blog";
 import BlogForm from "./components/BlogForm";
@@ -11,172 +13,126 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import "./index.css";
 
 const App = () => {
-  const [notification, dispatch] = useContext(NotificationContext);
-  const [blogs, setBlogs] = useState([]);
+  const [notification, notificationDispatch] = useContext(NotificationContext);
+  const [user, userDispatch] = useContext(UserContext);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [user, setUser] = useState(null);
-
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [url, setUrl] = useState("");
 
   const blogFormRef = useRef();
+  const queryClient = useQueryClient();
 
-  const handleTitleChange = (event) => {
-    setTitle(event.target.value);
-  };
+  const blogsResult = useQuery({
+    queryKey: ["blogs"],
+    queryFn: blogService.getAll,
+    refetchOnWindowFocus: false,
+  });
 
-  const handleAuthorChange = (event) => {
-    setAuthor(event.target.value);
-  };
-
-  const handleUrlChange = (event) => {
-    setUrl(event.target.value);
-  };
-
-  const handleUsernameChange = (event) => {
-    setUsername(event.target.value);
-  };
-
-  const handlePasswordChange = (event) => {
-    setPassword(event.target.value);
-  };
-
-  const addBlog = async ({ title, author, url }) => {
-    const newBlog = {
-      title: title,
-      author: author,
-      url: url,
-      user: {
-        username: user.username,
-        name: user.name,
-        id: user.id,
-      },
-    };
-
-    try {
-      const blog = await blogService.create(newBlog);
-      blog.user = {
-        username: user.username,
-        name: user.name,
-        id: user.id,
-      };
-
-      setBlogs((blogs) => blogs.concat(blog));
-
-      dispatch({
+  const newBlogMutation = useMutation({
+    mutationFn: blogService.create,
+    onSuccess: (newBlog) => {
+      const blogs = queryClient.getQueryData(["blogs"]);
+      queryClient.setQueryData(["blogs"], blogs.concat(newBlog));
+      notificationDispatch({
         type: "SHOW",
         payload: {
-          message: `A new blog ${blog.title} by ${blog.author} added`,
+          message: `A new blog ${newBlog.title} by ${newBlog.author} added`,
           type: "notice",
         },
       });
-      setTimeout(() => dispatch({ type: "HIDE" }), 5000);
-
-      setTitle("");
-      setAuthor("");
-      setUrl("");
-    } catch (error) {
-      dispatch({
+      setTimeout(() => notificationDispatch({ type: "HIDE" }), 5000);
+    },
+    onError: () => {
+      notificationDispatch({
         type: "SHOW",
-        payload: {
-          message: "Failed to add blog, please try again.",
-          type: "error",
-        },
+        payload: { message: "Failed to add blog", type: "error" },
       });
-      setTimeout(() => dispatch({ type: "HIDE" }), 5000);
-    }
-  };
+      setTimeout(() => notificationDispatch({ type: "HIDE" }), 5000);
+    },
+  });
 
-  const removeBlog = async (blog) => {
-    if (window.confirm("Delete blog?")) {
-      try {
-        await blogService.remove(blog.id);
-        setBlogs(blogs.filter((b) => b.id !== blog.id));
-        dispatch({
-          type: "SHOW",
-          payload: { message: "Blog deletion success", type: "notice" },
-        });
-        setTimeout(() => dispatch({ type: "HIDE" }), 5000);
-      } catch (exception) {
-        dispatch({
-          type: "SHOW",
-          payload: {
-            message: "Something went wrong when removing blog",
-            type: "error",
-          },
-        });
-        setTimeout(() => dispatch({ type: "HIDE" }), 5000);
-      }
-    }
-  };
-
-  const likeBlog = async (blog) => {
-    try {
-      const updated = {
-        ...blog,
-        likes: blog.likes + 1,
-        user: blog.user.id,
-      };
-      const returned = await blogService.update(blog.id, updated);
-      setBlogs(
-        blogs.map((b) =>
-          b.id === blog.id ? { ...returned, user: blog.user } : b,
-        ),
+  const updateBlogMutation = useMutation({
+    mutationFn: (updatedBlog) =>
+      blogService.update(updatedBlog.id, updatedBlog),
+    onSuccess: (returnedBlog) => {
+      const blogs = queryClient.getQueryData(["blogs"]);
+      queryClient.setQueryData(
+        ["blogs"],
+        blogs.map((b) => (b.id === returnedBlog.id ? returnedBlog : b)),
       );
-    } catch (exception) {
-      dispatch({
-        type: "SHOW",
-        payload: {
-          message: "Something went wrong when liking blog",
-          type: "error",
-        },
-      });
-      setTimeout(() => dispatch({ type: "HIDE" }), 5000);
-    }
-  };
+    },
+  });
 
-  useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs));
-  }, []);
+  const deleteBlogMutation = useMutation({
+    mutationFn: blogService.remove,
+    onSuccess: (id) => {
+      const blogs = queryClient.getQueryData(["blogs"]);
+      queryClient.setQueryData(
+        ["blogs"],
+        blogs.filter((b) => b.id !== id),
+      );
+      notificationDispatch({
+        type: "SHOW",
+        payload: { message: "Blog deleted", type: "notice" },
+      });
+      setTimeout(() => notificationDispatch({ type: "HIDE" }), 5000);
+    },
+  });
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem("loggedBlogappUser");
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
-      setUser(user);
+      userDispatch({ type: "SET", payload: user });
       blogService.setToken(user.token);
     }
-  }, []);
+  }, [userDispatch]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
     try {
-      const user = await loginService.login({
-        username,
-        password,
-      });
+      const user = await loginService.login({ username, password });
       window.localStorage.setItem("loggedBlogappUser", JSON.stringify(user));
       blogService.setToken(user.token);
-      setUser(user);
+      userDispatch({ type: "SET", payload: user });
       setUsername("");
       setPassword("");
     } catch (exception) {
-      dispatch({
+      notificationDispatch({
         type: "SHOW",
         payload: { message: "Wrong username or password", type: "error" },
       });
-      setTimeout(() => dispatch({ type: "HIDE" }), 5000);
+      setTimeout(() => notificationDispatch({ type: "HIDE" }), 5000);
     }
   };
 
-  const handleLogout = (event) => {
-    event.preventDefault();
+  const handleLogout = () => {
     window.localStorage.clear();
-    setUser(null);
+    userDispatch({ type: "CLEAR" });
     blogService.setToken(null);
   };
+
+  const addBlog = (blogObject) => {
+    newBlogMutation.mutate(blogObject);
+    blogFormRef.current.toggleVisibility();
+  };
+
+  const likeBlog = (blog) => {
+    updateBlogMutation.mutate({
+      ...blog,
+      likes: blog.likes + 1,
+      user: blog.user.id,
+    });
+  };
+
+  const removeBlog = (blog) => {
+    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}?`)) {
+      deleteBlogMutation.mutate(blog.id);
+    }
+  };
+
+  if (blogsResult.isLoading) return <div>loading data...</div>;
+
+  const blogs = blogsResult.data;
 
   if (user === null) {
     return (
@@ -185,8 +141,8 @@ const App = () => {
         <Notification message={notification.message} type={notification.type} />
         <LoginForm
           handleLogin={handleLogin}
-          handleUsernameChange={handleUsernameChange}
-          handlePasswordChange={handlePasswordChange}
+          handleUsernameChange={({ target }) => setUsername(target.value)}
+          handlePasswordChange={({ target }) => setPassword(target.value)}
           username={username}
           password={password}
         />
@@ -208,18 +164,7 @@ const App = () => {
           buttonLabel2="cancel"
           ref={blogFormRef}
         >
-          <BlogForm
-            createBlog={addBlog}
-            blogFormRef={blogFormRef}
-            addBlog={addBlog}
-            likeBlog={likeBlog}
-            title={title}
-            author={author}
-            url={url}
-            handleTitleChange={handleTitleChange}
-            handleAuthorChange={handleAuthorChange}
-            handleUrlChange={handleUrlChange}
-          />
+          <BlogForm createBlog={addBlog} blogFormRef={blogFormRef} />
         </Togglable>
         <br />
         {blogs

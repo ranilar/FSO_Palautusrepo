@@ -13,5 +13,9 @@
     "concurrently": "^8.0.0"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@tanstack/react-query": "^5.96.2",
+    "react-query": "^3.39.3"
+  }
 }
