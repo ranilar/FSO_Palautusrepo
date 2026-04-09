@@ -8,6 +8,8 @@ const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
 const testRouter = require ('./controllers/testing')
 
+const path = require('path')
+
 const app = express()
 app.use(cors())
 
@@ -27,6 +29,12 @@ app.use(express.json())
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
+
+app.use(express.static(path.join(__dirname, 'build')))
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'))
+})
 
 if (process.env.NODE_ENV === 'test') {
   const testingRouter = require('./controllers/testing')

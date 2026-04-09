@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Routes, Route } from "react-router-dom";
 import NotificationContext from "./contexts/NotificationContext";
 import UserContext from "./contexts/UserContext";
 import Notification from "./components/Notification";
@@ -151,36 +152,54 @@ const App = () => {
   }
 
   return (
-    <div>
-      <ErrorBoundary>
-        <h2>blogs</h2>
-        <Notification message={notification.message} type={notification.type} />
-        <p>
-          {user.username} logged in
-          <button onClick={handleLogout}>logout</button>
-        </p>
-        <Togglable
-          buttonLabel="create new blog"
-          buttonLabel2="cancel"
-          ref={blogFormRef}
-        >
-          <BlogForm createBlog={addBlog} blogFormRef={blogFormRef} />
-        </Togglable>
-        <br />
-        {blogs
-          .sort((a, b) => b.likes - a.likes)
-          .map((blog) => (
-            <div key={blog.id} className="blogStyle">
-              <Blog
-                blog={blog}
-                likeBlog={likeBlog}
-                removeBlog={removeBlog}
-                currentUser={user}
-              />
+    <ErrorBoundary>
+      <Notification message={notification.message} type={notification.type} />
+
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <div>
+              <h2>blogs</h2>
+              <p>
+                {user.username} logged in
+                <button onClick={handleLogout}>logout</button>
+              </p>
+
+              <Togglable
+                buttonLabel="create new blog"
+                buttonLabel2="cancel"
+                ref={blogFormRef}
+              >
+                <BlogForm createBlog={addBlog} blogFormRef={blogFormRef} />
+              </Togglable>
+
+              {blogs
+                .sort((a, b) => b.likes - a.likes)
+                .map((blog) => (
+                  <div key={blog.id} className="blogStyle">
+                    <Blog
+                      blog={blog}
+                      likeBlog={likeBlog}
+                      removeBlog={removeBlog}
+                      currentUser={user}
+                    />
+                  </div>
+                ))}
             </div>
-          ))}
-      </ErrorBoundary>
-    </div>
+          }
+        />
+
+        <Route
+          path="*"
+          element={
+            <div>
+              <h2>Page not found</h2>
+            </div>
+          }
+        />
+      </Routes>
+    </ErrorBoundary>
   );
 };
 

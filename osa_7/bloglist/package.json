@@ -6,8 +6,8 @@
   "scripts": {
     "test": "test",
     "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
-    "build": "npm run build --prefix client",
-    "start": "NODE_ENV=production npm start --prefix server"
+    "build": "npm run build --prefix client && rm -rf server/build/* && mkdir -p server/build && cp -r client/dist/* server/build",
+    "start": "npm run build && NODE_ENV=production npm start --prefix server"
   },
   "devDependencies": {
     "concurrently": "^8.0.0"
@@ -15,7 +15,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@tanstack/react-query": "^5.96.2",
     "react-query": "^3.39.3"
   }
 }
