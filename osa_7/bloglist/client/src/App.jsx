@@ -9,6 +9,7 @@ import BlogForm from "./components/BlogForm";
 import LoginForm from "./components/LoginForm";
 import blogService from "./services/blogs";
 import loginService from "./services/login";
+import persistentUser from "./services/persistentUser";
 import Togglable from "./components/Togglable";
 import ErrorBoundary from "./components/ErrorBoundary";
 import "./index.css";
@@ -80,9 +81,8 @@ const App = () => {
   });
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem("loggedBlogappUser");
-    if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON);
+    const user = persistentUser.getUser();
+    if (user) {
       userDispatch({ type: "SET", payload: user });
       blogService.setToken(user.token);
     }
@@ -92,7 +92,7 @@ const App = () => {
     event.preventDefault();
     try {
       const user = await loginService.login({ username, password });
-      window.localStorage.setItem("loggedBlogappUser", JSON.stringify(user));
+      persistentUser.saveUser(user);
       blogService.setToken(user.token);
       userDispatch({ type: "SET", payload: user });
       setUsername("");
@@ -107,7 +107,7 @@ const App = () => {
   };
 
   const handleLogout = () => {
-    window.localStorage.clear();
+    persistentUser.removeUser();
     userDispatch({ type: "CLEAR" });
     blogService.setToken(null);
   };

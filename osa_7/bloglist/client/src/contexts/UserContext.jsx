@@ -13,12 +13,12 @@ const userReducer = (state, action) => {
 
 const UserContext = createContext();
 
-export const UserContextProvider = (props) => {
+export const UserContextProvider = ({ children }) => {
   const [user, userDispatch] = useReducer(userReducer, null);
 
   return (
     <UserContext.Provider value={[user, userDispatch]}>
-      {props.children}
+      {children}
     </UserContext.Provider>
   );
 };
