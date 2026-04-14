@@ -7,6 +7,8 @@ import Notification from "./components/Notification";
 import Blog from "./components/Blog";
 import BlogForm from "./components/BlogForm";
 import LoginForm from "./components/LoginForm";
+import Users from "./components/UsersView";
+import Menu from "./components/Menu";
 import blogService from "./services/blogs";
 import loginService from "./services/login";
 import persistentUser from "./services/persistentUser";
@@ -154,7 +156,7 @@ const App = () => {
   return (
     <ErrorBoundary>
       <Notification message={notification.message} type={notification.type} />
-
+      <Menu />
       <Routes>
         <Route
           path="/"
@@ -189,7 +191,7 @@ const App = () => {
             </div>
           }
         />
-
+        <Route path="/users" element={<Users />} />
         <Route
           path="*"
           element={
