@@ -1,4 +1,5 @@
 import { useReducer } from "react";
+import { TextField, Button, Box, Typography, Paper } from "@mui/material";
 import blogFormReducer from "../reducers/blogFormReducer";
 
 const BlogForm = ({ createBlog, blogFormRef }) => {
@@ -22,39 +23,62 @@ const BlogForm = ({ createBlog, blogFormRef }) => {
       value: event.target.value,
     });
   };
+
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <div>
-          title:{" "}
-          <input
-            name="title"
-            value={state.title}
-            placeholder="title here..."
-            onChange={handleChange}
-          />
-        </div>
-        <div>
-          author:{" "}
-          <input
-            name="author"
-            value={state.author}
-            placeholder="author here..."
-            onChange={handleChange}
-          />
-        </div>
-        <div>
-          url:{" "}
-          <input
-            name="url"
-            value={state.url}
-            placeholder="url here..."
-            onChange={handleChange}
-          />
-        </div>
-        <button type="submit">create</button>
-      </form>
-    </div>
+    <Box sx={{ mt: 2, mb: 2 }}>
+      <Paper sx={{ p: 3 }} elevation={3}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Create a New Blog
+        </Typography>
+        <form onSubmit={handleSubmit}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <TextField
+              label="Title"
+              name="title"
+              variant="outlined"
+              size="small"
+              fullWidth
+              value={state.title}
+              placeholder="title here..."
+              onChange={handleChange}
+            />
+            <TextField
+              label="Author"
+              name="author"
+              variant="outlined"
+              size="small"
+              fullWidth
+              value={state.author}
+              placeholder="author here..."
+              onChange={handleChange}
+            />
+            <TextField
+              label="URL"
+              name="url"
+              variant="outlined"
+              size="small"
+              fullWidth
+              value={state.url}
+              placeholder="url here..."
+              onChange={handleChange}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              sx={{
+                alignSelf: "flex-start",
+                mt: 1,
+                bgcolor: "Chocolate",
+                "&:hover": { bgcolor: "#a0522d" },
+              }}
+            >
+              Create
+            </Button>
+          </Box>
+        </form>
+      </Paper>
+    </Box>
   );
 };
 
