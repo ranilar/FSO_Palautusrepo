@@ -2,13 +2,6 @@ import { useState, useEffect, useRef, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Container,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Button,
   AppBar,
   Toolbar,
@@ -255,52 +248,26 @@ const App = () => {
                     <BlogForm createBlog={addBlog} blogFormRef={blogFormRef} />
                   </Togglable>
 
-                  <TableContainer component={Paper} sx={{ mt: 4 }}>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>
-                            <strong>Blog</strong>
-                          </TableCell>
-                          <TableCell>
-                            <strong>Author</strong>
-                          </TableCell>
-                          <TableCell align="right">
-                            <strong>Action</strong>
-                          </TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {blogs
-                          .sort((a, b) => b.likes - a.likes)
-                          .map((blog) => (
-                            <TableRow key={blog.id} hover>
-                              <TableCell>
-                                <Link
-                                  to={`/blogs/${blog.id}`}
-                                  style={{
-                                    fontWeight: "bold",
-                                    color: "Chocolate",
-                                  }}
-                                >
-                                  {blog.title}
-                                </Link>
-                              </TableCell>
-                              <TableCell>{blog.author}</TableCell>
-                              <TableCell align="right">
-                                <Blog
-                                  blog={blog}
-                                  likeBlog={likeBlog}
-                                  removeBlog={removeBlog}
-                                  currentUser={user}
-                                  simpleView={true}
-                                />
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
+                  <Box
+                    sx={{
+                      mt: 4,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 1,
+                    }}
+                  >
+                    {blogs
+                      .sort((a, b) => b.likes - a.likes)
+                      .map((blog) => (
+                        <Blog
+                          key={blog.id}
+                          blog={blog}
+                          likeBlog={likeBlog}
+                          removeBlog={removeBlog}
+                          currentUser={user}
+                        />
+                      ))}
+                  </Box>
                 </Box>
               }
             />

@@ -1,19 +1,45 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom"; // 👈 Import useParams
+import { useParams } from "react-router-dom";
 import usersService from "../services/users";
+import {
+  Typography,
+  Box,
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
+  Divider,
+} from "@mui/material";
 
 const User = ({ user }) => {
   return (
-    <div>
-      <h2>{user.username}</h2>
+    <Box sx={{ mt: 4 }}>
+      <Typography variant="h4" sx={{ mb: 2 }}>
+        {user.username}
+      </Typography>
 
-      <h3>Added blogs</h3>
-      <ul>
-        {user.blogs.map((blog) => (
-          <li key={blog.id}>{blog.title}</li>
-        ))}
-      </ul>
-    </div>
+      <Typography variant="h6" sx={{ mb: 1, color: "Chocolate" }}>
+        Added blogs
+      </Typography>
+
+      <Paper elevation={3}>
+        <List>
+          {user.blogs.map((blog, index) => (
+            <Box key={blog.id}>
+              <ListItem>
+                <ListItemText primary={blog.title} />
+              </ListItem>
+              {index < user.blogs.length - 1 && <Divider />}
+            </Box>
+          ))}
+          {user.blogs.length === 0 && (
+            <ListItem>
+              <ListItemText secondary="No blogs added yet" />
+            </ListItem>
+          )}
+        </List>
+      </Paper>
+    </Box>
   );
 };
 
@@ -27,13 +53,21 @@ const OneUserView = () => {
   });
 
   if (result.isLoading) {
-    return <div>loading user...</div>;
+    return (
+      <Typography sx={{ mt: 4 }} variant="body1">
+        loading user...
+      </Typography>
+    );
   }
 
   const user = result.data;
 
   if (!user) {
-    return <div>user not found</div>;
+    return (
+      <Typography sx={{ mt: 4 }} variant="body1" color="error">
+        user not found
+      </Typography>
+    );
   }
 
   return <User user={user} />;
